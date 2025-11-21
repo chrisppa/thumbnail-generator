@@ -1,126 +1,188 @@
-# URL-Thumbnail 🖼️➜🖼️
+# thumbnail-generator
 
-**The fastest, zero-dependency (optional libvips) thumbnail generator that works directly from image URLs.**
+`thumbnail-generator` is a tiny, modern toolkit for creating thumbnails directly from remote image URLs. It streams the source file, transforms it entirely in memory, and returns ready-to-serve bytes. The library powers a Python API, an async helper, and a Typer-based CLI. Pillow is used out of the box; drop in `pyvips` for big speed wins with constant memory usage.
 
-No need to download the full image to disk.  
-One-liner thumbnails from any public image link — perfect for blogs, link previews, social media cards, crawlers, or static site generators.
+---
 
-## Installation
+## Project Highlights
 
-```bash
-pip install url-thumbnail
-```
+- Stream thumbnails straight from HTTPS URLs without writing to disk.
+- Automatic EXIF orientation correction and high-quality downsampling.
+- Unified crop modes: `fit`, `fill`, `pad`, and `smart` (smart switches to libvips smartcrop when available).
+- Multiple output formats (`JPEG`, `WEBP`, `AVIF`, `PNG`) with adjustable quality.
+- Async helper for event-driven crawlers.
+- CLI command for quick batch jobs or scripting.
+- Optional libvips backend (5–10× faster than Pillow on large images).
 
-## Quick Start
+Current scope:
 
-```python
-from url_thumbnail import thumbnail_from_url
+- Image thumbnails are production ready (Pillow fallback + libvips optional).
+- Async helper delegates to the active backend (libvips or Pillow).
+- Video thumbnail extraction is not yet implemented; a stub is exported so the public API stays stable.
 
-# Simple fit-inside thumbnail (preserves aspect ratio)
-thumb_bytesio = thumbnail_from_url(
-    "https://images.unsplash.com/photo-1682687220742-aba13b6e50ba",
-    size=(400, 400)
-)
+---
 
-# Save it
-with open("thumb.jpg", "wb") as f:
-    f.write(thumb_bytesio.getvalue())
-```
+## Requirements
 
-![Example Before/After](https://raw.githubusercontent.com/yourusername/url-thumbnail/main/assets/example-before-after.jpg)
+- Python 3.9 or newer (repository is tested with Python 3.12).
+- Linux, macOS, or Windows.
+- Optional: system `libvips` if you plan to use the high-performance backend.
+  - Ubuntu/Debian: `sudo apt install libvips`
+  - macOS: `brew install vips`
+  - Windows: install the prebuilt libvips bundle from [libvips releases](https://github.com/libvips/libvips/releases) and add it to `PATH`.
 
-## Features
+> **Note on Anaconda:** when using libvips, keep Python and the native libraries from the same toolchain. Mixing a conda-based Python with system `libvips` often results in loader errors. Creating a virtual environment from `/usr/bin/python3` (Linux/macOS) or using a clean conda environment that installs `libvips` from conda-forge solves this.
 
-* Works directly with remote URLs (no temporary files)
-* Powered by Pillow by default → zero system dependencies
-* Optional libvips backend (`backend="vips"`) → 5–10× faster + constant memory even on 100 MP photos
-* Automatic EXIF orientation correction
-* Multiple crop modes: fit (default), fill, center, pad, smart crop (coming soon)
-* WebP & AVIF output support
-* Async version (`athumbnail_from_url`)
-* Simple & modern CLI
-* Fully typed, tested, and ready for production
+---
 
-## Installation Options
+## Getting Started
+
+Clone the repository and create a virtual environment from your system Python:
 
 ```bash
-# Minimal install (Pillow only)
-pip install url-thumbnail
+git clone https://github.com/chrisppa/thumbnail-generator.git
+cd thumbnail-generator
 
-# With optional ultra-fast libvips backend
-pip install url-thumbnail[vips]
+python3 -m venv venv         # use /usr/bin/python3 on Linux
+source venv/bin/activate     # .\venv\Scripts\activate on Windows
+pip install -U pip
 ```
 
-On Linux you may need `apt install libvips` or `brew install vips` first for the `[vips]` extra.
+Install dependencies:
 
-## Quick Examples
+```bash
+# Pillow backend (default)
+pip install -e .
 
-### Python API
-
-```python
-from url_thumbnail import thumbnail_from_url, CropMode
-
-# Basic usage
-thumb = thumbnail_from_url("https://example.com/big.jpg", size=(300, 300))
-
-# Square thumbnail with center crop
-thumb = thumbnail_from_url(
-    url,
-    size=(500, 500),
-    crop=CropMode.FILL,
-    format="WEBP",
-    quality=85
-)
-
-# Async
-import asyncio
-from url_thumbnail.asyncio import athumbnail_from_url
-
-async def main():
-    thumb = await athumbnail_from_url(url, size=(400, 400))
-
-asyncio.run(main())
+# Add libvips support
+pip install -e .[vips]
 ```
+
+To run the CLI anywhere in the project, keep the environment activated:
+
+```bash
+source venv/bin/activate
+```
+
+---
+
+## Usage
 
 ### CLI
 
 ```bash
-url-thumbnail https://example.com/photo.jpg --size 600x400 --output preview.webp
-
-# Batch mode
-url-thumbnail *.jpg --size 300x300 --output-dir thumbs/
+thumbnail-generator https://images.unsplash.com/photo-1682687220742-aba13b6e50ba \
+  --size 800x800 \
+  --crop smart \
+  --format WEBP \
+  --output hero.webp
 ```
 
-## Why url-thumbnail?
+Options (via `thumbnail-generator --help`):
 
-| Package | Remote URLs | Pillow | libvips optional | Async | No temp files | Actively maintained (2025) |
-|---------|-------------|--------|------------------|-------|---------------|----------------------------|
-| **url-thumbnail** | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| easy-thumbnails | ❌ No (Django) | ✅ Yes | ❌ No | ❌ No | ❌ No | ✅ Yes |
-| sorl-thumbnail | ❌ No (Django) | ✅ Yes | ❌ No | ❌ No | ❌ No | ✅ Yes |
-| thumbnail | ❌ Local only | ✅ Yes | ❌ No | ❌ No | ✅ Yes | ❌ No |
-| preview-generator | ❌ Local only | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No |
+- `--output` – destination file path (default `thumb.jpg`).
+- `--size` – `<width>x<height>` integers (default `400x400`).
+- `--crop` – one of `fit`, `fill`, `smart`, `pad`.
+- `--format` – `JPEG`, `WEBP`, `AVIF`, `PNG`.
+- `--quality` – integer 1–100 (backend-specific defaults to 90).
 
-## Performance
+When `pyvips` is available the CLI reports `Saved … using vips backend`, otherwise Pillow is used automatically.
 
-300×300 thumbnail from 8000×8000 source:
+### Python API
 
-| Backend | Time | Peak RAM |
-|---------|------|----------|
-| Pillow | ~0.9 s | ~220 MB |
-| libvips | ~0.18 s | ~45 MB |
+```python
+from thumbnail_generator import thumbnail_from_url, CropMode
+
+buf = thumbnail_from_url(
+    "https://example.com/large.jpeg",
+    size=(500, 300),
+    crop=CropMode.FILL,
+    format="WEBP",
+    quality=85,
+)
+
+with open("thumb.webp", "wb") as fp:
+    fp.write(buf.getvalue())
+```
+
+### Async API
+
+```python
+import asyncio
+from thumbnail_generator import athumbnail_from_url
+
+async def main():
+    buf = await athumbnail_from_url(
+        "https://example.com/scene.jpg",
+        size=(320, 320),
+    )
+    with open("async-thumb.jpg", "wb") as fp:
+        fp.write(buf.getbuffer())
+
+asyncio.run(main())
+```
+
+The async helper uses the currently active backend under the hood.
+
+### Video API (planned)
+
+`thumbnail_generator.video_thumbnail_from_url()` currently raises `NotImplementedError`. The stub exists so the import surface is ready when ffmpeg integration lands.
+
+---
+
+## Backends Explained
+
+| Backend  | Activation                             | Strengths                                  | Notes                                    |
+|----------|----------------------------------------|--------------------------------------------|------------------------------------------|
+| Pillow   | Installed automatically with `pip install -e .` | Zero native deps, works everywhere          | Best for small/medium images             |
+| libvips  | Install `libvips` + `pip install -e .[vips]`   | Fast, constant memory, smart cropping available | Requires OS-level libvips libraries      |
+
+- `CropMode.FIT`: fits inside the target box, preserving aspect ratio.
+- `CropMode.FILL`: fills the target box by scaling and center-cropping.
+- `CropMode.SMART`: same as `FILL`; if libvips is active, switches to `smartcrop`.
+- `CropMode.PAD`: letterboxes the image on a background color.
+
+Output formats are passed straight to the backend. The default quality is 90; adjust for smaller files or higher fidelity.
+
+---
+
+## Development Workflow
+
+```bash
+source venv/bin/activate
+pip install -e .[dev,vips]  # add dev extras when they land
+pytest                      # once the test suite is added
+python -m thumbnail_generator.cli --help
+```
+
+Recommended extras (when available) include Ruff for linting, Mypy for typing, and pytest with responses for mocking HTTP downloads.
+
+---
+
+## Troubleshooting
+
+- **`ImportError: cannot load library 'libvips.so.42'`**  
+  Ensure `libvips` is installed system-wide *and* that your Python runtime comes from the same toolchain. Recreate the virtualenv with `/usr/bin/python3` or use a dedicated conda env with `conda install -c conda-forge libvips`.
+
+- **PyPI install without libvips**  
+  If you install the package elsewhere and want to force Pillow, omit the `[vips]` extra or `pip uninstall pyvips`.
+
+- **`NotImplementedError` for video**  
+  Video thumbnailing is on the roadmap; the current placeholder signals that this API surface is reserved.
+
+- **Timeouts fetching images**  
+  The default HTTP timeout is 30 seconds. If you need retries, wrap `thumbnail_from_url` in your own retry logic or extend `DEFAULT_HEADERS`/`DEFAULT_TIMEOUT` in `core.py`.
+
+---
 
 ## Roadmap
 
-* Smart cropping (face / salient region detection)
-* Built-in disk & memory caching
-* Background fill color / blur for pad mode
-* Batch processing with progress bars
-* Plugin system for custom backends
+- Smart crop improvements (face/saliency detection fallback when Pillow is active).
+- Configurable caching (memory/disk).
+- CLI batch mode with globbing and progress indicators.
+- Video frame extraction using ffmpeg-python.
 
-## Contributing
-
-Contributions are very welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+---
 
 ## License
 
