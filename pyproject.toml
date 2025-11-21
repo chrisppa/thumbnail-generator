@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "thumbnail-generator"
+version = "0.1.0"
+description = "Blazing-fast thumbnail generator from image/video URLs (pyvips primary + Pillow fallback)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [{ name = "chrisppa" }]
+
+dependencies = [
+    "httpx[http2]>=0.27",
+    "pillow>=10.0",
+]
+
+[project.optional-dependencies]
+vips = ["pyvips>=2.2.3"]
+video = ["ffmpeg-python>=0.2.0"]
+dev = ["pytest", "pytest-cov", "ruff", "mypy", "responses"]
+
+[project.urls]
+Repository = "https://github.com/chrisppa/thumbnail-generator.git"
+
+[project.scripts]
+thumbnail-generator = "thumbnail_generator.cli:app"   # CLI command will be `thumbnail-generator`
