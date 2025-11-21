@@ -43,11 +43,19 @@ Current scope:
 pip install thumbnail-generator
 ```
 
-Add the high-performance backend:
+Upgrade anytime:
+
+```bash
+pip install --upgrade thumbnail-generator
+```
+
+For the high-performance libvips backend (5–10× faster at large resolutions):
 
 ```bash
 pip install thumbnail-generator[vips]
 ```
+
+Make sure the native `libvips` shared library is available (e.g. `apt install libvips`, `brew install vips`, or `conda install -c conda-forge libvips pyvips`). If libvips cannot be imported the package automatically falls back to Pillow and prints `using pillow backend` when you run the CLI.
 
 The CLI depends on [Typer](https://typer.tiangolo.com/) and is bundled automatically from version `0.1.1` onward. If you are on `0.1.0`, run `pip install typer` once or upgrade: `pip install --upgrade thumbnail-generator`.
 
