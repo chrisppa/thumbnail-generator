@@ -35,30 +35,37 @@ Current scope:
 
 ---
 
-## Getting Started
+## Installation
 
-Clone the repository and create a virtual environment from your system Python:
+### PyPI (recommended)
+
+```bash
+pip install thumbnail-generator
+```
+
+Add the high-performance backend:
+
+```bash
+pip install thumbnail-generator[vips]
+```
+
+The CLI depends on [Typer](https://typer.tiangolo.com/) and is bundled automatically from version `0.1.1` onward. If you are on `0.1.0`, run `pip install typer` once or upgrade: `pip install --upgrade thumbnail-generator`.
+
+### From Source
 
 ```bash
 git clone https://github.com/chrisppa/thumbnail-generator.git
 cd thumbnail-generator
 
-python3 -m venv venv         # use /usr/bin/python3 on Linux
-source venv/bin/activate     # .\venv\Scripts\activate on Windows
+python3 -m venv venv          # /usr/bin/python3 on Linux
+source venv/bin/activate      # .\venv\Scripts\activate on Windows
 pip install -U pip
+
+pip install -e .              # Pillow backend
+pip install -e .[vips]        # Optional libvips backend
 ```
 
-Install dependencies:
-
-```bash
-# Pillow backend (default)
-pip install -e .
-
-# Add libvips support
-pip install -e .[vips]
-```
-
-To run the CLI anywhere in the project, keep the environment activated:
+Keep the virtual environment active whenever you run the CLI or tests:
 
 ```bash
 source venv/bin/activate
