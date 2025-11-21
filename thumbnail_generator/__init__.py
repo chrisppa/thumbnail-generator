@@ -12,7 +12,7 @@ from .async_io import athumbnail_from_url
 from .video import video_thumbnail_from_url
 from .core import CropMode, OutputFormat
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "thumbnail_from_url",
