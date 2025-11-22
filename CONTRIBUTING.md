@@ -55,4 +55,4 @@ Ensure the version bump commits are included and tags are pushed (`git push orig
 
 ## Questions?
 
-Open a GitHub issue or reach out via crisppy.codes+support@gmail.com.
+Open a GitHub issue or reach out via cturyasiima@gmail.com.
