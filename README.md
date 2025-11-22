@@ -1,5 +1,7 @@
 # thumbnail-generator
 
+[![Sponsor](https://github.com/sponsors/chrisppa/button)](https://github.com/sponsors/chrisppa)
+
 `thumbnail-generator` is a tiny, modern toolkit for creating thumbnails directly from remote image URLs and videos. It streams the source file, transforms it entirely in memory, and returns ready-to-serve bytes. The library powers a Python API, an async helper, video helpers, and a Typer-based CLI. Pillow is used out of the box; drop in `pyvips` for big speed wins with constant memory usage.
 
 ---
