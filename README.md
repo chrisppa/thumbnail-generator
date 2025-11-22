@@ -224,4 +224,4 @@ Recommended extras (when available) include Ruff for linting, Mypy for typing, a
 
 ## License
 
-MIT © chrisppa
+MIT License — see LICENSE for details.

@@ -9,6 +9,10 @@ description = "Thumbnail generator from image/video URLs (pyvips primary + Pillo
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
+
+classifiers = [
+    "License :: OSI Approved :: MIT License"
+]
 authors = [{ name = "chrisppa" }]
 
 dependencies = [
