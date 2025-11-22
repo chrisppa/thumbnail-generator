@@ -9,15 +9,16 @@ except ImportError:
     __backend__ = "pillow"
 
 from .async_io import athumbnail_from_url
-from .video import video_thumbnail_from_url
+from .video import video_thumbnail_from_url, VideoThumbnailError
 from .core import CropMode, OutputFormat
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 __all__ = [
     "thumbnail_from_url",
     "athumbnail_from_url",
     "video_thumbnail_from_url",
+    "VideoThumbnailError",
     "CropMode",
     "OutputFormat",
     "__backend__",
