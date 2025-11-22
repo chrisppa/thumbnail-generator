@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "thumbnail-generator"
 version = "0.1.1"
-description = "Blazing-fast thumbnail generator from image/video URLs (pyvips primary + Pillow fallback)"
+description = "Thumbnail generator from image/video URLs (pyvips primary + Pillow fallback)"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"

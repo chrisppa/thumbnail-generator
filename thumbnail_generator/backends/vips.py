@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import Tuple
+from typing import Optional, Tuple
 
 import httpx
 import pyvips
@@ -15,15 +15,14 @@ def _download(url: str) -> bytes:
         return b"".join(response.iter_bytes(65536))
 
 
-def thumbnail_from_url(
-    url: str,
-    size: Tuple[int, int] = (400, 400),
-    crop: CropMode = CropMode.FIT,
-    format: OutputFormat = "JPEG",
-    quality: int = DEFAULT_QUALITY,
-    background: Tuple[int, int, int] = (255, 255, 255),
+def thumbnail_from_bytes(
+    data: bytes,
+    size: Tuple[int, int],
+    crop: CropMode,
+    format: OutputFormat,
+    quality: int,
+    background: Tuple[int, int, int],
 ) -> BytesIO:
-    data = _download(url)
     width, height = size
 
     interesting = pyvips.Interesting.NONE
@@ -54,3 +53,25 @@ def thumbnail_from_url(
 
     buffer = image.write_to_buffer(f".{format.lower()}", Q=quality, strip=True)
     return BytesIO(buffer)
+
+
+def thumbnail_from_url(
+    url: str,
+    size: Tuple[int, int] = (400, 400),
+    crop: CropMode = CropMode.FIT,
+    format: OutputFormat = "JPEG",
+    quality: int = DEFAULT_QUALITY,
+    background: Tuple[int, int, int] = (255, 255, 255),
+    data: Optional[bytes] = None,
+) -> BytesIO:
+    if data is None:
+        data = _download(url)
+
+    return thumbnail_from_bytes(
+        data=data,
+        size=size,
+        crop=crop,
+        format=format,
+        quality=quality,
+        background=background,
+    )
