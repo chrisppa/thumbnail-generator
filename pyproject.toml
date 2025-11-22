@@ -28,6 +28,7 @@ dev = ["pytest", "pytest-cov", "ruff", "mypy", "responses"]
 
 [project.urls]
 Repository = "https://github.com/chrisppa/thumbnail-generator.git"
+Funding = "https://github.com/sponsors/chrisppa"
 
 [project.scripts]
 thumbnail-generator = "thumbnail_generator.cli:app"   # CLI command will be `thumbnail-generator`
