@@ -1,6 +1,6 @@
 # thumbnail-generator
 
-`thumbnail-generator` is a tiny, modern toolkit for creating thumbnails directly from remote image URLs. It streams the source file, transforms it entirely in memory, and returns ready-to-serve bytes. The library powers a Python API, an async helper, and a Typer-based CLI. Pillow is used out of the box; drop in `pyvips` for big speed wins with constant memory usage.
+`thumbnail-generator` is a tiny, modern toolkit for creating thumbnails directly from remote image URLs and videos. It streams the source file, transforms it entirely in memory, and returns ready-to-serve bytes. The library powers a Python API, an async helper, video helpers, and a Typer-based CLI. Pillow is used out of the box; drop in `pyvips` for big speed wins with constant memory usage.
 
 ---
 
@@ -13,12 +13,13 @@
 - Async helper for event-driven crawlers.
 - CLI command for quick batch jobs or scripting.
 - Optional libvips backend (5–10× faster than Pillow on large images).
+- Optional ffmpeg-powered video thumbnails that reuse the same image pipeline.
 
 Current scope:
 
 - Image thumbnails are production ready (Pillow fallback + libvips optional).
 - Async helper delegates to the active backend (libvips or Pillow).
-- Video thumbnail extraction is not yet implemented; a stub is exported so the public API stays stable.
+- Video thumbnail extraction works via ffmpeg (install with `[video]` extra and ensure the ffmpeg binary is on PATH).
 
 ---
 
@@ -58,6 +59,14 @@ pip install thumbnail-generator[vips]
 Make sure the native `libvips` shared library is available (e.g. `apt install libvips`, `brew install vips`, or `conda install -c conda-forge libvips pyvips`). If libvips cannot be imported the package automatically falls back to Pillow and prints `using pillow backend` when you run the CLI.
 
 The CLI depends on [Typer](https://typer.tiangolo.com/) and is bundled automatically from version `0.1.1` onward. If you are on `0.1.0`, run `pip install typer` once or upgrade: `pip install --upgrade thumbnail-generator`.
+
+Enable video thumbnails (requires the ffmpeg binary and `ffmpeg-python` binding):
+
+```bash
+pip install thumbnail-generator[video]
+```
+
+Ensure the `ffmpeg` executable is available on your PATH (Linux/macOS: `sudo apt install ffmpeg` / `brew install ffmpeg`; Windows: install the static build from https://ffmpeg.org/download.html and add its `bin/` directory to PATH).
 
 ### From Source
 
@@ -139,9 +148,23 @@ asyncio.run(main())
 
 The async helper uses the currently active backend under the hood.
 
-### Video API (planned)
+### Video API
 
-`thumbnail_generator.video_thumbnail_from_url()` currently raises `NotImplementedError`. The stub exists so the import surface is ready when ffmpeg integration lands.
+```python
+from thumbnail_generator import video_thumbnail_from_url, CropMode
+
+thumb = video_thumbnail_from_url(
+    "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    size=(640, 360),
+    crop=CropMode.FILL,
+    format="WEBP",
+)
+
+with open("video-thumb.webp", "wb") as fp:
+    fp.write(thumb.getvalue())
+```
+
+Install with `pip install thumbnail-generator[video]` and ensure the `ffmpeg` binary is available. The helper samples multiple timestamps and reuses the active image backend for resizing/cropping.
 
 ---
 
@@ -182,8 +205,8 @@ Recommended extras (when available) include Ruff for linting, Mypy for typing, a
 - **PyPI install without libvips**  
   If you install the package elsewhere and want to force Pillow, omit the `[vips]` extra or `pip uninstall pyvips`.
 
-- **`NotImplementedError` for video**  
-  Video thumbnailing is on the roadmap; the current placeholder signals that this API surface is reserved.
+- **Video thumbnails fail: `ffmpeg` not found**  
+  Install the `[video]` extra (`pip install thumbnail-generator[video]`) and ensure the `ffmpeg` executable is discoverable on PATH. On Windows, download a static build and restart your shell after updating PATH.
 
 - **Timeouts fetching images**  
   The default HTTP timeout is 30 seconds. If you need retries, wrap `thumbnail_from_url` in your own retry logic or extend `DEFAULT_HEADERS`/`DEFAULT_TIMEOUT` in `core.py`.
@@ -195,7 +218,7 @@ Recommended extras (when available) include Ruff for linting, Mypy for typing, a
 - Smart crop improvements (face/saliency detection fallback when Pillow is active).
 - Configurable caching (memory/disk).
 - CLI batch mode with globbing and progress indicators.
-- Video frame extraction using ffmpeg-python.
+- Intelligent frame scoring (sharpness / aesthetic ranking) for video thumbnails.
 
 ---
 
